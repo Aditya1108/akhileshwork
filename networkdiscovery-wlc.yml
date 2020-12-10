@@ -1,0 +1,36 @@
+- name: Include login variable
+  include_vars: ../vars/login.yml
+
+# - name: Include main variable
+#   include_vars: ../vars/main.yml
+
+# RUN SNMP COMMUNITY AIREOS COMMAND
+- name: Run snmp community cli
+  aireos_command:
+            commands: sh snmpcommunity
+  register: snmpcommresult
+
+# VERIFY SNMP COMMUNITY IS CONFIGURED
+- name: check for snmp community DiscoVery-08
+  debug:
+    msg: "snmp community DiscoVery-08 is found "
+  when: "'DiscoVery-08' in snmpcommresult.stdout[0]"
+
+# VERIFY SNMP COMMUNITY IS NOT CONFIGURED
+- name: Verify if snmp community DiscoVery-08 is not configured
+  debug:
+    msg: "snmp community DiscoVery-08 is not configured"
+  when: "'{ }' in snmpcommresult.stdout[0]"
+
+# CONFIGURE SNMP COMMUNITY IF NOT CONFIGURED
+- name: Set snmp community string for BMC Discovery
+  aireos_config:
+    lines:
+      - snmp community create DiscoVery-08 RO
+      - snmp community ipaddr 10.59.226.96 255.255.255.224 DiscoVery-08
+      - snmp community mode enable DiscoVery-08
+
+# SAVE CONFIGURATION
+- name: Saving current settings to NVRAM
+  aireos_config:
+  save_when: changed

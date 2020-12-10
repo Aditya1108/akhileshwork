@@ -1,0 +1,43 @@
+--
+
+# Network device discovery
+
+- hosts: all
+  gather_facts: false
+  become: false
+  tasks:
+      - name: Include login variable
+        include_vars: group_vars/devicevars.yml
+
+    # - name: Include config variable
+    #   include_vars: group_vars/config.yml
+
+    # RUN SNMP COMMUNITY IOS COMMAND
+      - name: Running configuration IOS cli
+        ios_command:
+                commands: sh runn | include snmp-server community DiscoVery-08
+        register: result
+
+
+    # VERIFY SNMP COMMUNITY IS CONFIGURED
+      - name: check for snmp community Discovery-08
+        debug:
+              msg: "snmp community Discovery-08 is found "
+        when: "'snmp-server community DiscoVery-08' in result.stdout[0]"
+
+    # VERIFY SNMP COMMUNITY IS NOT CONFIGURED
+      - name: Verify if snmp community is not configured
+        debug:
+             msg: "snmp community DiscoVery-08 is not configured"
+
+        when: "' ' in result.stdout[0]"
+
+    # CONFIGURE SNMP COMMUNITY IF NOT CONFIGURED
+      - name: Set snmp community string
+        ios_config:
+          lines:
+             - snmp-server community DiscoVery-08 RO 4
+
+    # VERIFY ACL for SNMP STRING IS CONFIGURED
+      - name: check for acl discovery config
+        import_tasks: acl-snmp-discovery.yml

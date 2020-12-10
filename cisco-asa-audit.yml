@@ -1,0 +1,40 @@
+---
+# tasks file for cisco-asa-audit
+
+# RUN SSH KEY-EXCHANGE CONFIGURATION
+- name: Run SSH Key-Exchange cli
+  asa_command:
+    commands: show running-config ssh
+  register: sshkeyresult
+
+# RUN SSH CIPHER CLI
+- name: show ssh cipher cli
+  asa_command:
+    commands: show ssh ciphers | inc aes256-ctr
+  register: sshcipherresult
+
+# Configure SSH Cipher and Key Exchange Group on ASA Firewalls
+- name: configure ssh cipher and key exchange group on asa
+  asa_config:
+      lines:
+          - ssh cipher encryption custom aes256-ctr
+          - ssh key-exchange group dh-group14-sha1
+          - ssh cipher integrity high
+#          - exit
+
+# VERIFY SSH KEY-EXCHANGE IS CONFIGURED
+- name: Verify ssh key-exchange is configured
+  debug:     
+    msg: 'ssh key-exchange is configured'      
+  when: "'ssh key-exchange group' in sshresult.stdout[0]"
+ 
+# VERIFY SSH CIPHER IS CONFIGURED
+- name: Verify ssh cipher is configured
+  debug:
+    msg: 'ssh cipher is configured'
+  when: "'ssh cipher integrity' in sshcipherresult.stdout[0]"
+
+# Save Configuration to NVRAM
+#- name: save configuration to startup
+#  asa_config:
+#    save_when: always

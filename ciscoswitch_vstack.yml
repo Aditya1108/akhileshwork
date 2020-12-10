@@ -1,0 +1,23 @@
+---
+
+# Cisco catalyst switch Vulnerability Compliance Check
+- hosts: all
+  vars_prompt:
+
+  - name: ansible_user
+    prompt: "User Name"
+    private: no
+
+  - name: ansible_ssh_pass
+    prompt: "Password"
+
+  tasks:
+
+  - debug:
+      msg: 'Logging in as {{ ansible_user }}'
+
+  connection: network_cli
+  gather_facts: false
+  become: false
+  roles:
+        - ciscoswitch_vstack

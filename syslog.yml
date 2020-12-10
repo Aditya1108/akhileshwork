@@ -1,0 +1,30 @@
+---
+- name: Run Logging host on cisco ios cli
+  ios_command:
+
+            commands: show runn | include logging host
+
+  register: loggingresult
+
+# Verify syslog logging host configured on devices
+- name: Verify syslog logging host on core devices
+  debug:
+    msg: "Syslog logging host is already configured"
+  when: "'logging host 10.59.56.205' in loggingresult.std[0]"
+
+# Verify if syslog logging is not configured on devices
+- name: Verify if syslog logging is not configured on devices
+  debug:
+    msg: "Syslog logging is not configured"
+  when: "'10.59.56.205' in loggingresult.std[0]"
+
+# Configure Syslog Logging host on devices
+- name: Configure Syslog Logging host on devices
+  ios_config:
+       lines:
+          - logging host 10.59.56.205
+
+# Save the IOS configuration on devices
+- name: Save the Running Configuration on devices
+  ios_config:
+    save_when: always

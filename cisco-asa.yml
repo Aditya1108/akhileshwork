@@ -1,0 +1,31 @@
+---
+
+# Cisco ASA Vulnerability Compliance Check
+- hosts: all
+  vars:
+   ansible_connection: local
+   ansible_network_os: asa
+   ansible_ssh_user: '{{ username }}'
+   ansible_ssh_pass: '{{ password }}'
+#  vars_prompt:
+
+#    - name: ansible_user
+#      prompt: "User Name"
+#      private: no
+
+#    - name: ansible_ssh_pass
+#      prompt: "Password"
+
+#  tasks:
+
+#    - debug:
+#        msg: 'Logging in as {{ ansible_user }}'
+
+  connection: network_cli
+  gather_facts: false
+  become: false
+  roles:
+
+        - cisco-asa-audit
+  debug:
+      var: cisco-asa-audit.stdout_lines
